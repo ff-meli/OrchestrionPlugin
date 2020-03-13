@@ -19,11 +19,11 @@ namespace OrchestrionPlugin
         {
             this.pi = pluginInterface;
 
-            pluginInterface.CommandManager.AddHandler(commandName, new CommandInfo(OnDisplayCommand));
-            pluginInterface.UiBuilder.OnBuildUi += Display;
-
             var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), songListFile);
             this.songList = new SongList(path, this);
+
+            pluginInterface.CommandManager.AddHandler(commandName, new CommandInfo(OnDisplayCommand));
+            pluginInterface.UiBuilder.OnBuildUi += Display;
         }
 
         public void Dispose()
