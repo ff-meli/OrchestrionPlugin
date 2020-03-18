@@ -5,7 +5,8 @@ using System.Reflection;
 
 namespace OrchestrionPlugin
 {
-    public class Plugin : IDalamudPlugin, IPlaybackController
+    // these interfaces got a bit out of hand now, probably not worth the isolation
+    public class Plugin : IDalamudPlugin, IPlaybackController, IResourceLoader
     {
         public string Name => "Orchestrion plugin";
 
@@ -13,17 +14,25 @@ namespace OrchestrionPlugin
         private const string commandName = "/porch";
 
         private DalamudPluginInterface pi;
+        private Configuration configuration;
         private SongList songList;
+        private string localDir;
 
         public void Initialize(DalamudPluginInterface pluginInterface)
         {
             this.pi = pluginInterface;
+            this.configuration = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
-            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), songListFile);
-            this.songList = new SongList(path, this);
+            this.localDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            var songlistPath = Path.Combine(this.localDir, songListFile);
+            this.songList = new SongList(songlistPath, this, this);
 
             pluginInterface.CommandManager.AddHandler(commandName, new CommandInfo(OnDisplayCommand));
             pluginInterface.UiBuilder.OnBuildUi += Display;
+
+            // add a config UI for now, even though this isn't config
+            pluginInterface.UiBuilder.OnOpenConfigUi += (sender, args) => this.OnDisplayCommand("", "");
         }
 
         public void Dispose()
@@ -45,6 +54,26 @@ namespace OrchestrionPlugin
         {
             // still no real way to do this
             this.pi.CommandManager.Commands["/xlbgmset"].Handler("/xlbgmset", "9999");
+        }
+
+        public void AddFavorite(int songId)
+        {
+            this.configuration.FavoriteSongs.Add(songId);
+            this.pi.SavePluginConfig(this.configuration);
+        }
+
+        public void RemoveFavorite(int songId)
+        {
+            this.configuration.FavoriteSongs.Remove(songId);
+            this.pi.SavePluginConfig(this.configuration);
+        }
+
+        public bool IsFavorite(int songId) => this.configuration.FavoriteSongs.Contains(songId);
+
+        public ImGuiScene.TextureWrap LoadUIImage(string imageFile)
+        {
+            var path = Path.Combine(this.localDir, imageFile);
+            return this.pi.UiBuilder.LoadImage(path);
         }
 
         private void OnDisplayCommand(string command, string args)

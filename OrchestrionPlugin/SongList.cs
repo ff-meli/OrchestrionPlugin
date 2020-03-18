@@ -20,6 +20,7 @@ namespace OrchestrionPlugin
         private IPlaybackController controller;
         private int selectedSong;
         private string searchText = string.Empty;
+        private ImGuiScene.TextureWrap favoriteIcon;
 
         private bool visible = false;
         public bool Visible
@@ -28,9 +29,11 @@ namespace OrchestrionPlugin
             set { this.visible = value; }
         }
 
-        public SongList(string songListFile, IPlaybackController controller)
+        public SongList(string songListFile, IPlaybackController controller, IResourceLoader loader)
         {
             this.controller = controller;
+            this.favoriteIcon = loader.LoadUIImage(@"favoriteIcon.png");
+
             ParseSongs(songListFile);
         }
 
@@ -38,6 +41,7 @@ namespace OrchestrionPlugin
         {
             this.Stop();
             this.songs = null;
+            this.favoriteIcon.Dispose();
         }
 
         private void ParseSongs(string path)
@@ -90,7 +94,7 @@ namespace OrchestrionPlugin
             if (!Visible)
                 return;
 
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowMinSize, new Vector2(370, 125));
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowMinSize, new Vector2(370, 150));
             ImGui.SetNextWindowSize(new Vector2(370, 440), ImGuiCond.FirstUseEver);
             // these flags prevent the entire window from getting a secondary scrollbar sometimes, and also keep it from randomly moving slightly with the scrollwheel
             if (ImGui.Begin("Orchestrion", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
@@ -104,32 +108,25 @@ namespace OrchestrionPlugin
                 ImGui.Separator();
 
                 ImGui.BeginChild("##songlist", new Vector2(0, -35));
-                foreach (var s in this.songs)
+                if (ImGui.BeginTabBar("##songlist tabs"))
                 {
-                    var song = s.Value;
-                    if (searchText.Length > 0 && !song.Name.ToLower().Contains(searchText.ToLower())
-                        && !song.Locations.ToLower().Contains(searchText.ToLower())
-                        && !song.Id.ToString().Contains(searchText))
+                    if (ImGui.BeginTabItem("All songs"))
                     {
-                        continue;
+                        DrawSonglist(false);
+                        ImGui.EndTabItem();
                     }
-
-                    ImGui.Text(song.Id.ToString());
-                    ImGui.SameLine();
-                    if (ImGui.Selectable($"{song.Name}##{song.Id}", this.selectedSong == song.Id, ImGuiSelectableFlags.AllowDoubleClick))
+                    if (ImGui.BeginTabItem("Favorites"))
                     {
-                        this.selectedSong = song.Id;
-                        if (ImGui.IsMouseDoubleClicked(0))
-                        {
-                            Play(this.selectedSong);
-                        }
+                        DrawSonglist(true);
+                        ImGui.EndTabItem();
                     }
+                    ImGui.EndTabBar();
                 }
                 ImGui.EndChild();
 
                 ImGui.Separator();
 
-                ImGui.Columns(2, "orch columns", false);
+                ImGui.Columns(2, "footer columns", false);
                 ImGui.SetColumnWidth(-1, ImGui.GetWindowSize().X - 100);
 
                 ImGui.TextWrapped(this.selectedSong > 0 ? this.songs[this.selectedSong].Locations : string.Empty);
@@ -156,6 +153,81 @@ namespace OrchestrionPlugin
             ImGui.End();
 
             ImGui.PopStyleVar();
+        }
+
+        private void DrawSonglist(bool favoritesOnly)
+        {
+            // to keep the tab bar always visible and not have it get scrolled out
+            ImGui.BeginChild("%%songlist_internal");
+
+            ImGui.Columns(2, "songlist columns", false);
+
+            ImGui.SetColumnWidth(-1, 13);
+            ImGui.SetColumnOffset(1, 12);
+
+            foreach (var s in this.songs)
+            {
+                var song = s.Value;
+                if (searchText.Length > 0 && !song.Name.ToLower().Contains(searchText.ToLower())
+                    && !song.Locations.ToLower().Contains(searchText.ToLower())
+                    && !song.Id.ToString().Contains(searchText))
+                {
+                    continue;
+                }
+
+                bool isFavorite = this.controller.IsFavorite(song.Id);
+
+                if (favoritesOnly && !isFavorite)
+                {
+                    continue;
+                }
+
+                ImGui.SetCursorPosX(-1);
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 3);
+
+                if (isFavorite)
+                {
+                    ImGui.Image(favoriteIcon.ImGuiHandle, new Vector2(13, 13));
+                    ImGui.SameLine();
+                }
+
+                ImGui.NextColumn();
+
+                ImGui.Text(song.Id.ToString());
+                ImGui.SameLine();
+                if (ImGui.Selectable($"{song.Name}##{song.Id}", this.selectedSong == song.Id, ImGuiSelectableFlags.AllowDoubleClick))
+                {
+                    this.selectedSong = song.Id;
+                    if (ImGui.IsMouseDoubleClicked(0))
+                    {
+                        Play(this.selectedSong);
+                    }
+                }
+                if (ImGui.BeginPopupContextItem())
+                {
+                    if (!isFavorite)
+                    {
+                        if (ImGui.Selectable("Add to favorites"))
+                        {
+                            this.controller.AddFavorite(song.Id);
+                        }
+                    }
+                    else
+                    {
+                        if (ImGui.Selectable("Remove from favorites"))
+                        {
+                            this.controller.RemoveFavorite(song.Id);
+                        }
+                    }
+                    ImGui.EndPopup();
+                }
+
+                ImGui.NextColumn();
+            }
+
+            ImGui.EndChild();
+
+            ImGui.Columns(1);
         }
     }
 }
