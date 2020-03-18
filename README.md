@@ -43,7 +43,7 @@ To remove a song from your favorites:
 ### Why are the song numbers skipping around?  They don't even start at 1!
 Those numbers are the internal ids used by the game.  Many numbers do not correspond to playable tracks, and so I don't display them in the player.
 
-### It's so hard to find certain tracks!  Can you add/change/remove <some specific info>?
+### It's so hard to find certain tracks!  Can you add/change/remove (some specific info)?
 In short, no.
 
 All the song information in the player is taken from [this spreadsheet](https://docs.google.com/spreadsheets/d/14yjTMHYmuB1m5-aJO8CkMferRT9sNzgasYq02oJENWs/edit#gid=0), which I do not maintain.
@@ -52,6 +52,9 @@ You might be able to ask in the CMTool discord if there is information you think
 
 ### Some new in-game music is out and I can't find it!
 If the tracks are new, it is possible that either the spreadsheet has not been updated by the community yet, or that I have not pulled in the latest updates to it.
+
+### I have a suggestion/issue/concern!
+Mention it in the XL discord, or create an issue here.
 
 ## Credits
 * goat, for the launcher and dalamud, without which none of this would be possible.
