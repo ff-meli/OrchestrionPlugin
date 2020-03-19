@@ -103,7 +103,6 @@ namespace OrchestrionPlugin
                 ImGui.Text("Search: ");
                 ImGui.SameLine();
                 ImGui.InputText("##searchbox", ref searchText, 32);
-                ImGui.NextColumn();
 
                 ImGui.Separator();
 
@@ -158,7 +157,7 @@ namespace OrchestrionPlugin
         private void DrawSonglist(bool favoritesOnly)
         {
             // to keep the tab bar always visible and not have it get scrolled out
-            ImGui.BeginChild("%%songlist_internal");
+            ImGui.BeginChild("##songlist_internal");
 
             ImGui.Columns(2, "songlist columns", false);
 
