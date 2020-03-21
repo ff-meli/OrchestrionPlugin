@@ -28,7 +28,10 @@ namespace OrchestrionPlugin
             var songlistPath = Path.Combine(this.localDir, songListFile);
             this.songList = new SongList(songlistPath, this, this);
 
-            pluginInterface.CommandManager.AddHandler(commandName, new CommandInfo(OnDisplayCommand));
+            pluginInterface.CommandManager.AddHandler(commandName, new CommandInfo(OnDisplayCommand)
+            {
+                HelpMessage = "Displays the orchestrion player, to view, change, or stop in-game BGM."
+            });
             pluginInterface.UiBuilder.OnBuildUi += Display;
 
             // add a config UI for now, even though this isn't config
