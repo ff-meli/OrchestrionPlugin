@@ -18,9 +18,10 @@ namespace OrchestrionPlugin
     {
         private Dictionary<int, Song> songs = new Dictionary<int, Song>();
         private IPlaybackController controller;
+        private IResourceLoader loader;
         private int selectedSong;
         private string searchText = string.Empty;
-        private ImGuiScene.TextureWrap favoriteIcon;
+        private ImGuiScene.TextureWrap favoriteIcon = null;
 
         private bool visible = false;
         public bool Visible
@@ -32,7 +33,7 @@ namespace OrchestrionPlugin
         public SongList(string songListFile, IPlaybackController controller, IResourceLoader loader)
         {
             this.controller = controller;
-            this.favoriteIcon = loader.LoadUIImage(@"favoriteIcon.png");
+            this.loader = loader;
 
             ParseSongs(songListFile);
         }
@@ -41,7 +42,7 @@ namespace OrchestrionPlugin
         {
             this.Stop();
             this.songs = null;
-            this.favoriteIcon.Dispose();
+            this.favoriteIcon?.Dispose();
         }
 
         private void ParseSongs(string path)
@@ -91,6 +92,15 @@ namespace OrchestrionPlugin
 
         public void Draw()
         {
+            // temporary bugfix for a race condition where it was possible that
+            // we would attempt to load the icon before the ImGuiScene was created in dalamud
+            // which would fail and lead to this icon being null
+            // Hopefully later the UIBuilder API can add an event to notify when it is ready
+            if (this.favoriteIcon == null)
+            {
+                this.favoriteIcon = loader.LoadUIImage(@"favoriteIcon.png");
+            }
+
             if (!Visible)
                 return;
 
