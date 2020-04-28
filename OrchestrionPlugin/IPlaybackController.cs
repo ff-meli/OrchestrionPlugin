@@ -3,12 +3,11 @@ namespace OrchestrionPlugin
 {
     interface IPlaybackController
     {
+        int CurrentSong { get; }
+        bool EnableFallbackPlayer { get; set; }
         void PlaySong(int songId);
         void StopSong();
 
-        // ehhhh
-        void AddFavorite(int songId);
-        void RemoveFavorite(int songId);
-        bool IsFavorite(int songId);
+        void DumpDebugInformation();
     }
 }

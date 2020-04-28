@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 
 namespace OrchestrionPlugin
 {
@@ -17,11 +18,14 @@ namespace OrchestrionPlugin
     class SongList : IDisposable
     {
         private Dictionary<int, Song> songs = new Dictionary<int, Song>();
+        private Configuration configuration;
         private IPlaybackController controller;
         private IResourceLoader loader;
         private int selectedSong;
         private string searchText = string.Empty;
         private ImGuiScene.TextureWrap favoriteIcon = null;
+        private ImGuiScene.TextureWrap settingsIcon = null;
+        private bool showDebugOptions = false;
 
         private bool visible = false;
         public bool Visible
@@ -30,8 +34,18 @@ namespace OrchestrionPlugin
             set { this.visible = value; }
         }
 
-        public SongList(string songListFile, IPlaybackController controller, IResourceLoader loader)
+        private bool settingsVisible = false;
+        public bool SettingsVisible
         {
+            get { return this.settingsVisible; }
+            set { this.settingsVisible = value; }
+        }
+
+        public bool AllowDebug { get; set; } = false;
+
+        public SongList(string songListFile, Configuration configuration, IPlaybackController controller, IResourceLoader loader)
+        {
+            this.configuration = configuration;
             this.controller = controller;
             this.loader = loader;
 
@@ -43,6 +57,7 @@ namespace OrchestrionPlugin
             this.Stop();
             this.songs = null;
             this.favoriteIcon?.Dispose();
+            this.settingsIcon?.Dispose();
         }
 
         private void ParseSongs(string path)
@@ -90,6 +105,22 @@ namespace OrchestrionPlugin
             this.controller.StopSong();
         }
 
+        private bool IsFavorite(int songId) => this.configuration.FavoriteSongs.Contains(songId);
+
+        private void AddFavorite(int songId)
+        {
+            this.configuration.FavoriteSongs.Add(songId);
+            this.configuration.Save();
+        }
+
+        private void RemoveFavorite(int songId)
+        {
+            this.configuration.FavoriteSongs.Remove(songId);
+            this.configuration.Save();
+        }
+
+        public string GetSongTitle(ushort id) => this.songs.ContainsKey(id) ? this.songs[id].Name : null;
+
         public void Draw()
         {
             // temporary bugfix for a race condition where it was possible that
@@ -98,21 +129,51 @@ namespace OrchestrionPlugin
             // Hopefully later the UIBuilder API can add an event to notify when it is ready
             if (this.favoriteIcon == null)
             {
-                this.favoriteIcon = loader.LoadUIImage(@"favoriteIcon.png");
+                this.favoriteIcon = loader.LoadUIImage("favoriteIcon.png");
+                this.settingsIcon = loader.LoadUIImage("settings.png");
             }
 
             if (!Visible)
+            {
+                // manually draw this here only if the main window is hidden
+                // This is just so the config ui can work independently
+                if (SettingsVisible)
+                {
+                    DrawSettings();
+                }
                 return;
+            }
+
+            var windowTitle = new StringBuilder("Orchestrion");
+            if (this.configuration.ShowSongInTitleBar)
+            {
+                // TODO: subscribe to the event so this only has to be constructed on change?
+                var currentSong = this.controller.CurrentSong;
+                if (this.songs.ContainsKey(currentSong))
+                {
+                    windowTitle.Append($" - [{this.songs[currentSong].Id}] {this.songs[currentSong].Name}");
+                }
+            }
+            windowTitle.Append("###Orchestrion");
 
             ImGui.PushStyleVar(ImGuiStyleVar.WindowMinSize, new Vector2(370, 150));
             ImGui.SetNextWindowSize(new Vector2(370, 440), ImGuiCond.FirstUseEver);
             // these flags prevent the entire window from getting a secondary scrollbar sometimes, and also keep it from randomly moving slightly with the scrollwheel
-            if (ImGui.Begin("Orchestrion", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+            if (ImGui.Begin(windowTitle.ToString(), ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
             {
                 ImGui.AlignTextToFramePadding();
                 ImGui.Text("Search: ");
                 ImGui.SameLine();
                 ImGui.InputText("##searchbox", ref searchText, 32);
+
+                ImGui.SameLine();
+                ImGui.SetCursorPosX(ImGui.GetWindowSize().X - 32);
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 1);
+                if (ImGui.ImageButton(this.settingsIcon.ImGuiHandle, new Vector2(16, 16)))
+                {
+                    this.settingsVisible = true;
+                }
+                DrawSettings();
 
                 ImGui.Separator();
 
@@ -184,7 +245,7 @@ namespace OrchestrionPlugin
                     continue;
                 }
 
-                bool isFavorite = this.controller.IsFavorite(song.Id);
+                bool isFavorite = IsFavorite(song.Id);
 
                 if (favoritesOnly && !isFavorite)
                 {
@@ -218,14 +279,14 @@ namespace OrchestrionPlugin
                     {
                         if (ImGui.Selectable("Add to favorites"))
                         {
-                            this.controller.AddFavorite(song.Id);
+                            AddFavorite(song.Id);
                         }
                     }
                     else
                     {
                         if (ImGui.Selectable("Remove from favorites"))
                         {
-                            this.controller.RemoveFavorite(song.Id);
+                            RemoveFavorite(song.Id);
                         }
                     }
                     ImGui.EndPopup();
@@ -237,6 +298,122 @@ namespace OrchestrionPlugin
             ImGui.EndChild();
 
             ImGui.Columns(1);
+        }
+
+        public void DrawSettings()
+        {
+            if (!this.settingsVisible)
+            {
+                return;
+            }
+
+            var settingsSize = AllowDebug ? new Vector2(490, 270) : new Vector2(490, 120);
+
+            ImGui.SetNextWindowSize(settingsSize, ImGuiCond.Appearing);
+            if (ImGui.Begin("Orchestrion Settings", ref this.settingsVisible, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoCollapse))
+            {
+                if (ImGui.IsWindowAppearing())
+                {
+                    this.showDebugOptions = false;
+                }
+
+                ImGui.SetNextItemOpen(true, ImGuiCond.Appearing);
+                if (ImGui.TreeNode("Display##orch options"))
+                {
+                    ImGui.Spacing();
+
+                    var showSongInTitlebar = this.configuration.ShowSongInTitleBar;
+                    if (ImGui.Checkbox("Show current song in player title bar", ref showSongInTitlebar))
+                    {
+                        this.configuration.ShowSongInTitleBar = showSongInTitlebar;
+                        this.configuration.Save();
+                    }
+
+                    var showSongInChat = this.configuration.ShowSongInChat;
+                    if (ImGui.Checkbox("Show \"Now playing\" messages in game chat when the current song changes", ref showSongInChat))
+                    {
+                        this.configuration.ShowSongInChat = showSongInChat;
+                        this.configuration.Save();
+                    }
+
+                    if (AllowDebug)
+                    {
+                        ImGui.Checkbox("Show debug options (Only if you have issues!)", ref this.showDebugOptions);
+                    }
+
+                    ImGui.TreePop();
+                }
+
+                // I'm sure there are better ways to do this, but I didn't want to change global spacing
+                ImGui.Spacing();
+                ImGui.Spacing();
+                ImGui.Spacing();
+
+                if (this.showDebugOptions && AllowDebug)
+                {
+                    ImGui.SetNextItemOpen(true, ImGuiCond.Appearing);
+                    if (ImGui.TreeNode("Debug##orch options"))
+                    {
+                        ImGui.Spacing();
+
+                        bool useFallbackPlayer = this.controller.EnableFallbackPlayer;
+                        if (ImGui.Checkbox("Use fallback player", ref useFallbackPlayer))
+                        {
+                            this.Stop();
+                            // this automatically will validate if we can change this, and save the config if so
+                            this.controller.EnableFallbackPlayer = useFallbackPlayer;
+                        }
+                        ImGui.SameLine();
+                        HelpMarker("This uses the old version of the player, in case the new version has problems.\n" +
+                            "You typically should not use this unless the new version does not work at all.\n" +
+                            "(In which case, please report it on discord!)");
+
+                        ImGui.Spacing();
+
+                        int targetPriority = this.configuration.TargetPriority;
+
+                        ImGui.SetNextItemWidth(100.0f);
+                        if (ImGui.SliderInt("BGM priority", ref targetPriority, 0, 11))
+                        {
+                            // stop the current song so it doesn't get 'stuck' on in case we switch to a lower priority
+                            this.Stop();
+
+                            this.configuration.TargetPriority = targetPriority;
+                            this.configuration.Save();
+
+                            // don't (re)start a song here for now
+                        }
+                        ImGui.SameLine();
+                        HelpMarker("Songs play at various priority levels, from 0 to 11.\n" +
+                            "Songs at lower numbers will override anything playing at a higher number, with 0 winning out over everything else.\n" +
+                            "You can experiment with changing this value if you want the game to be able to play certain music even when Orchestrion is active.\n" +
+                            "(Usually) zone music is 10-11, mount music is 6, GATEs are 4.  There is a lot of variety in this, however.\n" +
+                            "The old Orchestrion used to play at level 3 (it now uses 0 by default).");
+
+                        ImGui.Spacing();
+                        if (ImGui.Button("Dump priority info"))
+                        {
+                            this.controller.DumpDebugInformation();
+                        }
+
+                        ImGui.TreePop();
+                    }
+                }
+            }
+            ImGui.End();
+        }
+
+        static void HelpMarker(string desc)
+        {
+            ImGui.TextDisabled("(?)");
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.PushTextWrapPos(ImGui.GetFontSize() * 35.0f);
+                ImGui.TextUnformatted(desc);
+                ImGui.PopTextWrapPos();
+                ImGui.EndTooltip();
+            }
         }
     }
 }
