@@ -173,7 +173,6 @@ namespace OrchestrionPlugin
                 {
                     this.settingsVisible = true;
                 }
-                DrawSettings();
 
                 ImGui.Separator();
 
@@ -223,6 +222,8 @@ namespace OrchestrionPlugin
             ImGui.End();
 
             ImGui.PopStyleVar();
+
+            DrawSettings();
         }
 
         private void DrawSonglist(bool favoritesOnly)

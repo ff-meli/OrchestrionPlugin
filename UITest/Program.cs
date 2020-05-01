@@ -172,7 +172,6 @@ namespace OrchestrionTest
                 {
                     _drawSettings = true;
                 }
-                DrawSettings();
 
                 ImGui.Separator();
 
@@ -216,6 +215,8 @@ namespace OrchestrionTest
             ImGui.End();
 
             ImGui.PopStyleVar();
+
+            DrawSettings();
         }
 
         private static void DrawSonglist(bool favoritesOnly)
