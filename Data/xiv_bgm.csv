@@ -247,7 +247,7 @@ ID;Name;Locations;Color by Expansion/Collab
 245;Tricksome;Wanderer's Palace (Hard);
 246;Aftermath;Amdapor Keep (Hard);
 247;Blind to the Dark;The World of Darkness;Transitions "Hamartomania" Combat
-248;Blind to the Dark (Cerberus Stomach);The World of Darkness;Muffled
+248;Tumbling Down (Cerberus Stomach);The World of Darkness;Muffled
 249;Hunger;The World of Darkness;Transitions "The Reach of Darkness" after ending
 250;Four-Sided Circle;Manderville Gold Saucer;
 251;Gateway to Paradise;Chocobo racing 1;
@@ -273,7 +273,7 @@ ID;Name;Locations;Color by Expansion/Collab
 271;A Cold Wind;Heavensward title screen;
 272;Dragonsong;Final Steps of Faith;
 273;Shelter;Heavensward safezone music;
-274;Heavensward safezone music 2;;
+274;Safety In Numbers;Heavensward safezone music 2;
 275;Nobility Obliges;The Pillars (day);
 276;Nobility Sleeps;The Pillars (night);
 277;Solid;The Foundation (day);
@@ -741,7 +741,7 @@ ID;Name;Locations;Color by Expansion/Collab
 739;The sound of the End;The Copied Factory - FFXIV Collab;
 740;Weight of the World - Prelude Version ;The Copied Factory - FFXIV Collab;
 741;Crumbling Lies;The Copied Factory - (Quest Area);
-742;Balamb Garden Theme;;
+742;Where I Belong;;FFVIII
 743;Hopl's Dropple;Hopl's Stopple;
 744;Bozjan Resistance;Grandor;
 745;8-Papaya Adventures Theme;;
@@ -758,7 +758,7 @@ ID;Name;Locations;Color by Expansion/Collab
 756;Horizons Calling Mount;;
 757;Holy Consult;;
 758;When a Tree Falls;Free Company Workshop;
-759;Oblivion's Refusal;;
+759;Oblivion's Refusal;Eden's Verse:Refulgence;
 760;;;
 761;;;
 762;;;
