@@ -5,5 +5,6 @@
   "InternalName": "orchestrion",
   "AssemblyVersion": "1.2.0.0",
   "RepoUrl": "https://github.com/ff-meli/OrchestrionPlugin/",
-  "ApplicableVersion": "any"
+  "ApplicableVersion": "any",
+  "DalamudApiLevel": 1 
 }
