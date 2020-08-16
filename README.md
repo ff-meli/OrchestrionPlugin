@@ -59,4 +59,5 @@ Mention it in the XL discord, or create an issue here.
 ## Credits
 * goat, for the launcher and dalamud, without which none of this would be possible.
 * MagowDeath#1763 for maintaining [the community spreadsheet](https://docs.google.com/spreadsheets/d/14yjTMHYmuB1m5-aJO8CkMferRT9sNzgasYq02oJENWs/edit#gid=0) with all of the song data that is used in this plugin.
+* Many thanks to [Caraxi](https://github.com/Caraxi/) for keeping things working and updated while I was away!
 * Too many discord people to name, for helping out with things and offering suggestions.
