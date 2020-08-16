@@ -16,9 +16,9 @@ namespace OrchestrionPlugin
         // songId3 is sometimes not updated at all, and I'm unsure of its use
         // zeroing out songId2 seems to be necessary to actually cancel playback without using
         // an invalid id (which is the only way to do it with just songId1)
-        public ushort songId;
-        public ushort songId2;
-        public ushort songId3;
+        public ushort songId;               // Sometimes the id, sometimes something unclear.  Maybe some kind of flags? Values seem all over the place
+        public ushort songId2;              // Seems to be the 'actual' song that is playing, when not 0 or 1
+        public ushort songId3;              // Usually seems to match the current actual song, but not define it...; may not have reset issues like songId2
         public byte timerEnable;            // whether the timer automatically counts up
         public byte padding;
         public float timer;                 // if enabled, seems to always count from 0 to 6
@@ -29,6 +29,20 @@ namespace OrchestrionPlugin
         public fixed byte unk4[3];
         public short unk5;                  // may interact with the timer, seems to break it sometimes; set to 0x100 for priority 0 in some cases but seems to not do anything
         public fixed byte unk6[2];
+    }
+
+    class BGMRecord
+    {
+        public int priority;
+        public ushort songId;
+        // timestamp?
+
+        // because I am lazy
+        public void Set(int priority, ushort songId)
+        {
+            this.priority = priority;
+            this.songId = songId;
+        }
     }
 
     class BGMControl : IDisposable
@@ -43,6 +57,7 @@ namespace OrchestrionPlugin
 
         private AddressResolver Address { get; }
         private CancellationTokenSource cancellationToken;
+        private BGMRecord previousSongInfo = new BGMRecord();
 
         public BGMControl(AddressResolver address)
         {
@@ -90,9 +105,36 @@ namespace OrchestrionPlugin
                     // and the highest priority populated song is what the client current plays
                     for (activePriority = 0; activePriority < ControlBlockCount; activePriority++)
                     {
+                        // TODO: everything here is awful and makes me sad
+
+                        // This value isn't a collection of flags, but it seems like if it's 0 entirely, the song at this
+                        // priority isn't playing
+                        // Earlying out here since the checks below are already awful enough
+                        if (bgms[activePriority].songId == 0)
+                        {
+                            continue;
+                        }
+
                         // reading songId2 here, because occasionally songId is something different
                         // not sure of what the meaning is when that is the case
                         // eg, songId2 and songId3 are 0x7, which is correct, but songId was 0x3EB
+                        // We could also read songId3, but there are cases where it is set despite not playing
+                        // (eg, user disables mount music, songId and songId2 will be 0, but songId3 will be the non-playing mount song)
+
+                        // An attempt to deal with the weird "fighting" sound issue, which results in a lot of incorrect spam
+                        // of song changes.
+                        // Often with overlaid zone music (beast tribes, festivals, etc), prio 10 will be the actual music the user
+                        // hears, but it will very quickly reset songId2 to 0 and then back, while songId3 doesn't change.
+                        // This leads to song transition messages to the prio 11 zone music and then back to the overlaid prio 10 music
+                        // over and over again, despite the actual music being played not changing.
+                        if (activePriority == previousSongInfo.priority && bgms[activePriority].songId2 == 0
+                            && previousSongInfo.songId != 0 && bgms[activePriority].songId3 == previousSongInfo.songId)
+                        {
+#if DEBUG
+                            PluginLog.Log("skipping change from {0} to {1} on prio {2}", previousSongInfo.songId, bgms[activePriority].songId2, activePriority);
+#endif
+                            return;
+                        }
 
                         // TODO: might want to have a method to check if an id is valid, in case there are other weird cases
                         if (bgms[activePriority].songId2 != 0 && bgms[activePriority].songId2 != 9999)
@@ -108,11 +150,13 @@ namespace OrchestrionPlugin
             if (CurrentSongId != currentSong)
             {
 #if DEBUG
-                Dalamud.Plugin.PluginLog.Log($"changed to song {currentSong} at priority {activePriority}");
+                PluginLog.Log($"changed to song {currentSong} at priority {activePriority}");
 #endif
                 CurrentSongId = currentSong;
 
                 OnSongChanged?.Invoke(currentSong);
+
+                previousSongInfo.Set(activePriority, currentSong);
             }
         }
 
