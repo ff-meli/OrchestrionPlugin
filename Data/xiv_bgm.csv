@@ -589,7 +589,7 @@ ID;Name;Locations;Color by Expansion/Collab
 587;Heartless (Omega M+F Theme);Alphascape;O12
 588;Sunrise Hushed;Suzaku Mount;
 589;From the Heavens Hushed;Alphascape Mount;
-590;Tyranical Ascian;Solus Soz Galvus;
+590;Bedlam's Brink;Solus Soz Galvus;
 591;From the Heavens Final Omega;Alphascape;O12 Savage
 592;Crazy Motorcycle;SDS Fenrir Mount;
 593;Dangertek;The Shifting of Altar of Uznair/Feast;
@@ -699,9 +699,9 @@ ID;Name;Locations;Color by Expansion/Collab
 697;Force Your Way;Eden's Gate:Resurrection/Descent;
 698;Landslide;Eden's Gate:Sepulture;
 699;On Our Fates Alight;;
-700;What Angel Wakes Me (Mount);The Dancing Plage EX;
-701;Insanity (Mount);The Crown of Immaculate EX;
-702;Landslide (Mount);Eden's Gate:Sepulture Savage;
+700;What Angel Wakes Me;The Dancing Plage EX;(Mount)
+701;Insanity;The Crown of Immaculate EX;(Mount)
+702;Landslide;Eden's Gate:Sepulture Savage;(Mount)
 703;Four-sided Circle;The Gold Saucer;
 704;Four-fold Knowing;Login Screen;
 705;Who Brings Shadow+TaT;The End Credits;
@@ -722,15 +722,15 @@ ID;Name;Locations;Color by Expansion/Collab
 720;Safety in Numbers;The Firmament;
 721;Kai-Shirr Customs;Eulmore;
 722;Give it your all;Pvp;Orginaly Place id for Locus Remix
-723;Metal - Brutal Justice Remix (2nd Phase);Ultimate Alex;
+723;Metal - Brutal Justice Remix (Phase 2);Ultimate Alex;
 724;TimeStop;Ultimate Alex;
 725;Rise - Remix (Third Phase);Ultimate Alex;
 726;Moebius Orchestra (Final Phase);Ultimate Alex;
 727;The Grand Cosmos;The Grand Cosmos;
-728;Invincible (Mount);The Dying Gasp;
-729;Onsal Hakair (Mount);Danshing Nadaam;
+728;Invincible;The Dying Gasp;(Mount)
+729;Onsal Hakair;Danshing Nadaam;(Mount)
 730;Feast PVP;Wolves Den pier;
-731;Imperium (Mount);The Masked Carnivale;
+731;Imperium;The Masked Carnivale;(Mount)
 732;Significance - Nothing;The Copied Factory - Nier Automata OST;
 733;City Ruins - Rays of Light;The Copied Factory - Nier Automata OST;
 734;Vague Hope;The Copied Factory - (Quest Area);
@@ -752,10 +752,10 @@ ID;Name;Locations;Color by Expansion/Collab
 750;Twice Stricken;Eden's Verse:Fulmination;
 751;Primal Angel;Eden's Verse:Furor;
 752;Return to Oblivion;Eden's Verse:Refulgence;
-753;Ultima (Primals) Mount;The Cinder Drift (Extreme);
-754;Twice Stricken Mount;Eden's Verse:Fulmination (Savage);
+753;Ultima (Primals);The Cinder Drift (Extreme);(Mount)
+754;Twice Stricken;Eden's Verse:Fulmination (Savage);(Mount)
 755;Rise of The White Raven;The Cinder Drift (2nd Phase);
-756;Horizons Calling Mount;;
+756;Horizons Calling;;(Mount)
 757;Holy Consult;;
 758;When a Tree Falls;Free Company Workshop;
 759;Oblivion's Refusal;Eden's Verse:Refulgence;
@@ -771,14 +771,14 @@ ID;Name;Locations;Color by Expansion/Collab
 769;Ascendence Phase;The Seat of Sacrifice;
 770;N/A;;
 771;To The Edge;The Seat of Sacrifice;
-772;Bozja;The Bozjan Southern Front;
-773;Bozja;The Bozjan Southern Front;
-774;Bozja;The Bozjan Southern Front;
-775;Bozja;The Bozjan Southern Front;
-776;Bozja;The Bozjan Southern Front;
-777;Where All Roads Lead;The Heroes Gauntlet;
-778;To The Edge (Mount);The Seat of Sacrifice (Extreme);
-779;Gabrial Alpha (Mount);The Bozjan Southern Front;
+772;Wind on the Plains;The Bozjan Southern Front;
+773;Discord: Imperial (Zodiac Age Version);The Bozjan Southern Front;
+774;Into the Fortress (Zodiac Age Version);The Bozjan Southern Front;
+775;Battle with an Esper (Zodiac Age Ver);The Bozjan Southern Front;
+776;Life and Death (Zodiac Age Version);The Bozjan Southern Front;
+777;Where All Roads Lead;The Heroes Gauntlet;(Mount)
+778;To The Edge;The Seat of Sacrifice (Extreme);(Mount)
+779;Discord: Imperial (Zodiac Age Version);The Bozjan Southern Front;(Mount)
 780;Broken Heart;The Puppet's Bunker - nier Automata ;Quest instance
 781;Rays of Light (Instrumental);The Puppet's Bunker - nier Automata ;Solo / Cutscenes
 782;Amusement Park;The Puppet's Bunker - nier Automata ;Quest instance
@@ -786,7 +786,7 @@ ID;Name;Locations;Color by Expansion/Collab
 784;Grandma - Destruction;The Puppet's Bunker - Raid;
 785;End of the Unknown;The Puppet's Bunker - Raid;
 786;Torn From the Heavens/TDCDA (Medley);The Puppet's Bunker - Raid;Final Boss
-787;Bozjan Battlefield;;
+787;Unrest (Zodiac Age Version);The Bozjan Southern Front;
 788;???;;
 789;Heavensward;City of Giants (Solo Instance);
 790;Stormblood;City of Giants (Solo Instance);
