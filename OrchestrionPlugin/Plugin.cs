@@ -18,6 +18,7 @@ namespace OrchestrionPlugin
     public class Plugin : IDalamudPlugin, IPlaybackController, IResourceLoader
     {
         public string Name => "Orchestrion plugin";
+        public string AssemblyLocation { get; set; } = Assembly.GetExecutingAssembly().Location;
 
         private const string songListFile = "xiv_bgm.csv";
         private const string commandName = "/porch";
@@ -38,7 +39,7 @@ namespace OrchestrionPlugin
             this.configuration.Initialize(pluginInterface);
             this.enableFallbackPlayer = this.configuration.UseOldPlayback;
 
-            this.localDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            this.localDir = Path.GetDirectoryName(AssemblyLocation);
 
             var songlistPath = Path.Combine(this.localDir, songListFile);
             this.songList = new SongList(songlistPath, this.configuration, this, this);

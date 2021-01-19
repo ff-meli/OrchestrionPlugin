@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Numerics;
 using System.Text;
+using Dalamud.Plugin;
 
 namespace OrchestrionPlugin
 {
@@ -13,16 +15,19 @@ namespace OrchestrionPlugin
         public int Id;
         public string Name;
         public string Locations;
+        public string AdditionalInfo;
     }
 
     class SongList : IDisposable
     {
+        private const string SheetPath = @"https://docs.google.com/spreadsheets/d/1gGNCu85sjd-4CDgqw-K5tefTe4HYuDK38LkRyvx_fEc/gviz/tq?tqx=out:csv&sheet=main";
         private Dictionary<int, Song> songs = new Dictionary<int, Song>();
         private Configuration configuration;
         private IPlaybackController controller;
         private IResourceLoader loader;
         private int selectedSong;
         private string searchText = string.Empty;
+        private string songListFile = string.Empty;
         private ImGuiScene.TextureWrap favoriteIcon = null;
         private ImGuiScene.TextureWrap settingsIcon = null;
         private bool showDebugOptions = false;
@@ -45,11 +50,12 @@ namespace OrchestrionPlugin
 
         public SongList(string songListFile, Configuration configuration, IPlaybackController controller, IResourceLoader loader)
         {
+            this.songListFile = songListFile;
             this.configuration = configuration;
             this.controller = controller;
             this.loader = loader;
 
-            ParseSongs(songListFile);
+            UpdateSheet();
         }
 
         public void Dispose()
@@ -59,39 +65,94 @@ namespace OrchestrionPlugin
             this.favoriteIcon?.Dispose();
             this.settingsIcon?.Dispose();
         }
-
-        private void ParseSongs(string path)
+        
+        // Attempts to load supplemental bgm data from the csv file
+        private bool LoadSheet(string sheetText)
         {
-            using (var stream = new StreamReader(path))
+            songs = new Dictionary<int, Song>();
+
+            bool loadSuccess = true;
+            try
             {
-                while (!stream.EndOfStream)
+                var sheetLines = sheetText.Split('\n'); // gdocs provides \n
+                for (int i = 1; i < sheetLines.Length; i++)
                 {
-                    var parts = stream.ReadLine().Split(';');
-                    if (parts.Length < 2)
-                    {
-                        continue;
-                    }
+                    // The formatting is odd here because gdocs adds quotes around columns and doubles each single quote
+                    var elements = sheetLines[i].Split(new[] {"\","}, StringSplitOptions.None);
+                    var id = int.Parse(elements[0].Substring(1));
+                    var name = elements[1].Substring(1).Replace("\"\"", "\"");;
 
-                    if (!int.TryParse(parts[0], out int id))
-                    {
-                        continue;
-                    }
-
-                    var name = parts[1];
-                    if (id == 0 || string.IsNullOrEmpty(name) || name == "N/A")
-                    {
-                        continue;
-                    }
-
+                    // Any track without an official name is "???"
+                    // While Null BGM tracks and None are also pretty invalid
+                    if (string.IsNullOrEmpty(name) || name == "Null BGM" || name == "None") continue;
+                    
+                    var location = elements[2].Substring(1).Replace("\"\"", "\"");
+                    var additionalInfo = elements[3].Substring(1, elements[3].Substring(1).Length - 1).Replace("\"\"", "\"");
+                    
                     var song = new Song
                     {
                         Id = id,
-                        Name = name.Trim(),
-                        Locations = string.Join(", ", parts.Skip(2).Where(s => !string.IsNullOrEmpty(s)).ToArray()).Trim()
+                        Name = name,
+                        Locations = location,
+                        AdditionalInfo = additionalInfo
                     };
-
-                    this.songs.Add(id, song);
+                    
+                    songs[id] = song;
                 }
+            }
+            catch (Exception e)
+            {
+                PluginLog.Error(e, "Could not read bgm sheet.");
+                loadSuccess = false;
+            }
+
+            return loadSuccess;
+        }
+
+        private void UpdateSheet()
+        {
+            var destination = songListFile;
+            using var client = new WebClient();
+            try
+            {
+                var newText = client.DownloadString(SheetPath);
+                if (File.Exists(destination))
+                {
+                    string existingText = File.ReadAllText(destination);
+                    if (newText == existingText)
+                    {
+                        LoadSheet(existingText);
+                    }
+                    else if (LoadSheet(newText))
+                    {
+                        File.WriteAllText(destination, newText);
+                        PluginLog.Log("Updated bgm sheet.");
+                    }
+                    else
+                    {
+                        PluginLog.Error("There was a new bgm sheet, but parsing it failed.");
+                        PluginLog.Error("Orchestrion failed to update bgm sheet.");
+                        // Assume the previous file loaded fine?
+                        LoadSheet(existingText);
+                    }
+                }
+                else
+                {
+                    if (LoadSheet(newText))
+                    {
+                        File.WriteAllText(destination, newText);
+                        PluginLog.Log("Updated bgm sheet");
+                    }
+                    else
+                    {
+                        PluginLog.Error("Failed to parse fresh bgm sheet.");
+                        PluginLog.Error("Orchestrion failed to update bgm sheet.");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                PluginLog.Error(e, "Orchestrion failed to update bgm sheet.");
             }
         }
 
@@ -176,7 +237,7 @@ namespace OrchestrionPlugin
 
                 ImGui.Separator();
 
-                ImGui.BeginChild("##songlist", new Vector2(0, -35));
+                ImGui.BeginChild("##songlist", new Vector2(0, -60));
                 if (ImGui.BeginTabBar("##songlist tabs"))
                 {
                     if (ImGui.BeginTabItem("All songs"))
@@ -199,6 +260,10 @@ namespace OrchestrionPlugin
                 ImGui.SetColumnWidth(-1, ImGui.GetWindowSize().X - 100);
 
                 ImGui.TextWrapped(this.selectedSong > 0 ? this.songs[this.selectedSong].Locations : string.Empty);
+                
+                // ImGui.Separator();
+                
+                ImGui.TextWrapped(this.selectedSong > 0 ? this.songs[this.selectedSong].AdditionalInfo : string.Empty);
 
                 ImGui.NextColumn();
 
@@ -241,6 +306,7 @@ namespace OrchestrionPlugin
                 var song = s.Value;
                 if (searchText.Length > 0 && !song.Name.ToLower().Contains(searchText.ToLower())
                     && !song.Locations.ToLower().Contains(searchText.ToLower())
+                    && !song.AdditionalInfo.ToLower().Contains(searchText.ToLower())
                     && !song.Id.ToString().Contains(searchText))
                 {
                     continue;
