@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Numerics;
 using System.Text;
@@ -67,92 +66,61 @@ namespace OrchestrionPlugin
         }
         
         // Attempts to load supplemental bgm data from the csv file
-        private bool LoadSheet(string sheetText)
+        // This throws all internal errors
+        private void LoadSheet(string sheetText)
         {
             songs = new Dictionary<int, Song>();
 
-            bool loadSuccess = true;
-            try
+            var sheetLines = sheetText.Split('\n'); // gdocs provides \n
+            for (int i = 1; i < sheetLines.Length; i++)
             {
-                var sheetLines = sheetText.Split('\n'); // gdocs provides \n
-                for (int i = 1; i < sheetLines.Length; i++)
+                // The formatting is odd here because gdocs adds quotes around columns and doubles each single quote
+                var elements = sheetLines[i].Split(new[] {"\","}, StringSplitOptions.None);
+                var id = int.Parse(elements[0].Substring(1));
+                var name = elements[1].Substring(1).Replace("\"\"", "\"");;
+
+                // Any track without an official name is "???"
+                // While Null BGM tracks and None are also pretty invalid
+                if (string.IsNullOrEmpty(name) || name == "Null BGM" || name == "None") continue;
+                    
+                var location = elements[2].Substring(1).Replace("\"\"", "\"");
+                var additionalInfo = elements[3].Substring(1, elements[3].Substring(1).Length - 1).Replace("\"\"", "\"");
+                    
+                var song = new Song
                 {
-                    // The formatting is odd here because gdocs adds quotes around columns and doubles each single quote
-                    var elements = sheetLines[i].Split(new[] {"\","}, StringSplitOptions.None);
-                    var id = int.Parse(elements[0].Substring(1));
-                    var name = elements[1].Substring(1).Replace("\"\"", "\"");;
-
-                    // Any track without an official name is "???"
-                    // While Null BGM tracks and None are also pretty invalid
-                    if (string.IsNullOrEmpty(name) || name == "Null BGM" || name == "None") continue;
+                    Id = id,
+                    Name = name,
+                    Locations = location,
+                    AdditionalInfo = additionalInfo
+                };
                     
-                    var location = elements[2].Substring(1).Replace("\"\"", "\"");
-                    var additionalInfo = elements[3].Substring(1, elements[3].Substring(1).Length - 1).Replace("\"\"", "\"");
-                    
-                    var song = new Song
-                    {
-                        Id = id,
-                        Name = name,
-                        Locations = location,
-                        AdditionalInfo = additionalInfo
-                    };
-                    
-                    songs[id] = song;
-                }
+                songs[id] = song;
             }
-            catch (Exception e)
-            {
-                PluginLog.Error(e, "Could not read bgm sheet.");
-                loadSuccess = false;
-            }
-
-            return loadSuccess;
         }
 
         private void UpdateSheet()
         {
-            var destination = songListFile;
+            var existingText = File.ReadAllText(this.songListFile);
+
             using var client = new WebClient();
             try
             {
+                PluginLog.Log("Checking for updated bgm sheet");
                 var newText = client.DownloadString(SheetPath);
-                if (File.Exists(destination))
+                LoadSheet(newText);
+
+                // would really prefer some kind of proper versioning here
+                if (newText != existingText)
                 {
-                    string existingText = File.ReadAllText(destination);
-                    if (newText == existingText)
-                    {
-                        LoadSheet(existingText);
-                    }
-                    else if (LoadSheet(newText))
-                    {
-                        File.WriteAllText(destination, newText);
-                        PluginLog.Log("Updated bgm sheet.");
-                    }
-                    else
-                    {
-                        PluginLog.Error("There was a new bgm sheet, but parsing it failed.");
-                        PluginLog.Error("Orchestrion failed to update bgm sheet.");
-                        // Assume the previous file loaded fine?
-                        LoadSheet(existingText);
-                    }
-                }
-                else
-                {
-                    if (LoadSheet(newText))
-                    {
-                        File.WriteAllText(destination, newText);
-                        PluginLog.Log("Updated bgm sheet");
-                    }
-                    else
-                    {
-                        PluginLog.Error("Failed to parse fresh bgm sheet.");
-                        PluginLog.Error("Orchestrion failed to update bgm sheet.");
-                    }
+                    File.WriteAllText(this.songListFile, newText);
+                    PluginLog.Log("Updated bgm sheet to new version");
                 }
             }
             catch (Exception e)
             {
-                PluginLog.Error(e, "Orchestrion failed to update bgm sheet.");
+                PluginLog.Error(e, "Orchestrion failed to update bgm sheet; using previous version");
+                // if this throws, something went horribly wrong and we should just break completely
+                LoadSheet(existingText);
             }
         }
 
