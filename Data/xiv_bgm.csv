@@ -676,16 +676,16 @@ ID;Name;Locations;Color by Expansion/Collab
 674;Neath Dark Waters;The Tempest (Amaurot);the Gentile Giant Folk
 675;A Reason to Live;Tomra, Lydha Lran, ???, etc.;Beast Tribe Towns
 676;No Greater Sorrow;Inn at Journey's Head, Twine, etc.;ShB Town Theme
-677;Rencounter 1;;
-678;Rencounter 2;;
-679;Rencounter 3;;
-680;Rencounter 4;;
-681;Rencounter 5;;
+677;Rencounter 1;All SHB Zones;
+678;Rencounter 2;All SHB Zones;
+679;Rencounter 3;All SHB Zones;
+680;Rencounter 4;All SHB Zones;
+681;Rencounter 5;All SHB Zones;
 682;N/A;;
 683;What Angel Wakes Me;The Dancing Plague;
 684;Insanity;The Crown of Immaculate;
-685;Who Brings Shadow;;
-686;Invincible;;
+685;Who Brings Shadow;The Dying Gasp;
+686;Invincible;The Dying Gasp;
 687;To Fire And Sword;The Holminister Switch;
 688;Figments;Dohn Mheg;
 689;Unwound;Qitana Ravel;
@@ -698,7 +698,7 @@ ID;Name;Locations;Color by Expansion/Collab
 696;Blue Fields;The Empty;
 697;Force Your Way;Eden's Gate:Resurrection/Descent;
 698;Landslide;Eden's Gate:Sepulture;
-699;On Our Fates Alight;;
+699;On Our Fates Alight;Amaro Porter (Needs Verfication);
 700;What Angel Wakes Me;The Dancing Plage EX;(Mount)
 701;Insanity;The Crown of Immaculate EX;(Mount)
 702;Landslide;Eden's Gate:Sepulture Savage;(Mount)
@@ -710,8 +710,8 @@ ID;Name;Locations;Color by Expansion/Collab
 708;Tomorrow and Tomorrow 2;;
 709;Tomorrow and Tomorrow (No vocals);;
 710;Shattered;;
-711;Pain in Pleasure;;
-712;Such as it Is;;
+711;Pain in Pleasure;Eulmore;
+712;Such as it Is;ShB Sanctuary;
 713;N/A;;
 714;The Darks' Kiss;;
 715;On Our Fates Alight;All Locations;Amaro Porter/Mount Music
@@ -721,7 +721,7 @@ ID;Name;Locations;Color by Expansion/Collab
 719;The Garden's Gates;il mheg;
 720;Safety in Numbers;The Firmament;
 721;Kai-Shirr Customs;Eulmore;
-722;Give it your all;Pvp;Orginaly Place id for Locus Remix
+722;Give it your all;Pvp;Orginal Place id for Locus Remix
 723;Metal - Brutal Justice Remix (Phase 2);Ultimate Alex;
 724;TimeStop;Ultimate Alex;
 725;Rise - Remix (Third Phase);Ultimate Alex;
@@ -773,9 +773,9 @@ ID;Name;Locations;Color by Expansion/Collab
 771;To The Edge;The Seat of Sacrifice;
 772;Wind on the Plains;The Bozjan Southern Front;
 773;Discord: Imperial (Zodiac Age Version);The Bozjan Southern Front;
-774;Into the Fortress (Zodiac Age Version);The Bozjan Southern Front;
-775;Battle with an Esper (Zodiac Age Ver);The Bozjan Southern Front;
-776;Life and Death (Zodiac Age Version);The Bozjan Southern Front;
+774;Into the Fortress (Zodiac Age Version);Castrum Lacus Litore;
+775;Battle with an Esper (Zodiac Age Ver);Castrum Lacus Litore;
+776;Life and Death (Zodiac Age Version);Castrum Lacus Litore;
 777;Where All Roads Lead;The Heroes Gauntlet;(Mount)
 778;To The Edge;The Seat of Sacrifice (Extreme);(Mount)
 779;Discord: Imperial (Zodiac Age Version);The Bozjan Southern Front;(Mount)
@@ -787,21 +787,21 @@ ID;Name;Locations;Color by Expansion/Collab
 785;End of the Unknown;The Puppet's Bunker - Raid;
 786;Torn From the Heavens/TDCDA (Medley);The Puppet's Bunker - Raid;Final Boss
 787;Unrest (Zodiac Age Version);The Bozjan Southern Front;
-788;???;;
+788;Ishgard Firmament Theme (Night);The Firmament;Pteradon/ Certain Mounts
 789;Heavensward;City of Giants (Solo Instance);
 790;Stormblood;City of Giants (Solo Instance);
-791;N/A;;
+791;New Foundations;The Firmament;
 792;The Black Wolf Stalks Again;Castrum Marinum;Golden Emerald Weapon
-793;N/A;;
-794;N/A;;
-795;N/A;;
-796;N/A;;
-797;???;;
+793;Gogo's Theme;Masked Carnivale (31);Phase 1
+794;The Sochen Cave Palace (Zodiac Age);Delubrum Reginae;
+795;Giving Chase (Zodiac Age Version);Delubrum Reginae;Generic Combat Theme
+796;The Queen Awakens;Delubrum Reginae;The Queen fight
+797;Open for Victory I;Open Tournaments;
 798;Freshly-Baked Porxie;Matoya's Relict;
 799;Don't Be Afraid;Eden's Promise - Umbra/Litany;
 800;The Legendary Beast;Eden's Promise - Anamorphosis;
 801;Promises to Keep;Eden's Promise - Eternity;
-802;Promises to Keep ;Eden's Promise - Eternity (Savage);
+802;The Extreme;Eden's Promise - Eternity (Savage);
 803;The Black Wolf Stalks Again (Mount);Castrum Marinum;
 804;Promises to Keep (Mount);Eden's Promise - Eternity (Savage);
 805;N/A;;

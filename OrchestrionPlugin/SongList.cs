@@ -269,7 +269,7 @@ namespace OrchestrionPlugin
                 if (ImGui.Selectable($"{song.Name}##{song.Id}", this.selectedSong == song.Id, ImGuiSelectableFlags.AllowDoubleClick))
                 {
                     this.selectedSong = song.Id;
-                    if (ImGui.IsMouseDoubleClicked(0))
+                    if (ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
                     {
                         Play(this.selectedSong);
                     }
