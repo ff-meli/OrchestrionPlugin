@@ -49,7 +49,7 @@ namespace OrchestrionPlugin
 
         public bool AllowDebug { get; set; } = false;
 
-        public SongList(Configuration configuration, IPlaybackController controller, IResourceLoader loader)
+        public SongList(string songListFile, Configuration configuration, IPlaybackController controller, IResourceLoader loader)
         {
             this.songListFile = songListFile;
             this.configuration = configuration;
