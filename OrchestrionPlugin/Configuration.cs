@@ -15,8 +15,7 @@ namespace OrchestrionPlugin
 
         public bool UseOldPlayback { get; set; } = false;
         public int TargetPriority { get; set; } = 0;
-        public string XivBgmCsv { get; } = "https://docs.google.com/spreadsheets/d/14yjTMHYmuB1m5-aJO8CkMferRT9sNzgasYq02oJENWs/gviz/tq?tqx=out:csv&sheet=FFXIVBG:ID";
-
+        
         public HashSet<int> FavoriteSongs { get; internal set; } = new HashSet<int>();
 
         [NonSerialized]
