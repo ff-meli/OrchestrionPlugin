@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OrchestrionPlugin
 {
 
-    public class MemoryUtil
+    public static class MemoryUtil
     {
         [DllImport("kernel32.dll")]
         static extern bool ReadProcessMemory(IntPtr hProcess,
@@ -29,12 +25,14 @@ IntPtr lpBaseAddress, [Out] byte[] lpBuffer, int dwSize, out IntPtr lpNumberOfBy
 
             var modBase = GetModuleBaseAddress(process, "ffxiv_dx11.exe");
 
-            var address = FindDMAAddy(hProc, (modBase + 0x01F31B68), new int[] { 0x98, 0x10, 0x58, 0x48, 0x38, 0x8, 0x80 });
+            // This address appears to map to the game's music buffer. When music is playing the value of address is not zero
+            // When music is not playing value is 0. This is regardless of song priority
+            var address = FindDMAAddress(hProc, modBase + 0x01F31B68, new int[] { 0x98, 0x10, 0x58, 0x48, 0x38, 0x8, 0x80 });
 
             return Marshal.ReadInt64(address);
         }
 
-        private static IntPtr FindDMAAddy(IntPtr hProc, IntPtr ptr, int[] offsets)
+        private static IntPtr FindDMAAddress(IntPtr hProc, IntPtr ptr, int[] offsets)
         {
             var buffer = new byte[IntPtr.Size];
             foreach (int i in offsets)

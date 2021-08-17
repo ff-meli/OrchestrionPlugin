@@ -60,9 +60,9 @@ namespace OrchestrionPlugin
         private AddressResolver Address { get; }
         private CancellationTokenSource cancellationToken;
         private BGMRecord previousSongInfo = new BGMRecord();
+
         public bool shuffleEnabled;
         public List<int> playlist { get; set; }
-
         public System.Timers.Timer timer { get; set; }
 
         public BGMControl(AddressResolver address)
@@ -116,21 +116,6 @@ namespace OrchestrionPlugin
                     // and the highest priority populated song is what the client current plays
                     for (activePriority = 0; activePriority < ControlBlockCount; activePriority++)
                     {
-                        PluginLog.Log("//////////////////");
-                        PluginLog.Log(bgms[activePriority].songId.ToString());
-                        PluginLog.Log(bgms[activePriority].songId2.ToString());
-                        PluginLog.Log(bgms[activePriority].songId3.ToString());
-                        PluginLog.Log(bgms[activePriority].priorityIndex.ToString());
-                        PluginLog.Log(bgms[activePriority].timer.ToString());
-                        PluginLog.Log(bgms[activePriority].timer.ToString());
-                        PluginLog.Log(bgms[activePriority].timerEnable.ToString());
-                        PluginLog.Log(bgms[activePriority].unk1.ToString());
-                        PluginLog.Log(bgms[activePriority].unk2.ToString());
-                        PluginLog.Log(bgms[activePriority].unk5.ToString());
-                        PluginLog.Log(bgms[activePriority].blockTimer.ToString());
-
-                        PluginLog.Log("//////////////////");
-
                         // TODO: everything here is awful and makes me sad
 
                         // This value isn't a collection of flags, but it seems like if it's 0 entirely, the song at this
@@ -173,11 +158,9 @@ namespace OrchestrionPlugin
                 }
             }
 
-            PluginLog.Log("currentsong " + currentSong.ToString());
-
+            // Wait for game to write song buffer to memory before shuffling again. Helps with songs that begin with period of silence
             if (MemoryUtil.GetMusicWriteAddress() == 0 && shuffleEnabled && timer.Enabled)
             {
-
                 this.Shuffle(activePriority);
 
                 return;

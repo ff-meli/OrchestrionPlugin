@@ -26,8 +26,6 @@ namespace OrchestrionPlugin
             if (baseObject != IntPtr.Zero)
             {
                 this.BGMControl = Marshal.ReadIntPtr(baseObject + 0xC0);
-                PluginLog.Log(this.BGMControl.ToString());
-
             }
             else
             {
