@@ -33,20 +33,17 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Dalamud">
-      <HintPath>..\..\Dalamud\Dalamud.dll</HintPath>
+      <HintPath>..\..\Dalamud\Dalamud\bin\Release\Dalamud.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ImGui.NET">
-      <HintPath>..\..\Dalamud\ImGui.NET.dll</HintPath>
+      <HintPath>..\..\Dalamud\Dalamud\bin\Release\ImGui.NET.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ImGuiScene">
-      <HintPath>..\..\Dalamud\ImGuiScene.dll</HintPath>
+      <HintPath>..\..\Dalamud\Dalamud\bin\Release\ImGuiScene.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -65,12 +62,14 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="IPlaybackController.cs" />
     <Compile Include="IResourceLoader.cs" />
-    <Compile Include="MemoryUtil.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SongList.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\Data\xiv_bgm.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\Data\orchestrion.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -80,9 +79,6 @@
     <Content Include="..\Data\settings.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
