@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Numerics;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace OrchestrionPlugin
 {
@@ -43,13 +45,13 @@ namespace OrchestrionPlugin
 
         public bool AllowDebug { get; set; } = false;
 
-        public SongList(string songListFile, Configuration configuration, IPlaybackController controller, IResourceLoader loader)
+        public SongList(Configuration configuration, IPlaybackController controller, IResourceLoader loader)
         {
             this.configuration = configuration;
             this.controller = controller;
             this.loader = loader;
 
-            ParseSongs(songListFile);
+            ParseSongs();
         }
 
         public void Dispose()
@@ -60,24 +62,23 @@ namespace OrchestrionPlugin
             this.settingsIcon?.Dispose();
         }
 
-        private void ParseSongs(string path)
+        private void ParseSongs()
         {
-            using (var stream = new StreamReader(path))
+            var request = (HttpWebRequest)WebRequest.Create(configuration.XivBgmCsv);
+            var response = (HttpWebResponse)request.GetResponse();
+
+            using (var stream = new StreamReader(response.GetResponseStream()))
             {
                 while (!stream.EndOfStream)
                 {
-                    var parts = stream.ReadLine().Split(';');
-                    if (parts.Length < 2)
+                    var parts = stream.ReadLine().Split(',').ToList();
+                    var escapedParts = parts.Select(x => Regex.Replace(x, "\"", string.Empty)).ToArray();
+                    if (!int.TryParse(escapedParts[0], out int id))
                     {
                         continue;
                     }
 
-                    if (!int.TryParse(parts[0], out int id))
-                    {
-                        continue;
-                    }
-
-                    var name = parts[1];
+                    var name = escapedParts[1];
                     if (id == 0 || string.IsNullOrEmpty(name) || name == "N/A")
                     {
                         continue;
@@ -87,7 +88,7 @@ namespace OrchestrionPlugin
                     {
                         Id = id,
                         Name = name.Trim(),
-                        Locations = string.Join(", ", parts.Skip(2).Where(s => !string.IsNullOrEmpty(s)).ToArray()).Trim()
+                        Locations = string.Join(", ", escapedParts.Skip(2).Where(s => !string.IsNullOrEmpty(s)).ToArray()).Trim()
                     };
 
                     this.songs.Add(id, song);
@@ -120,6 +121,7 @@ namespace OrchestrionPlugin
         }
 
         public string GetSongTitle(ushort id) => this.songs.ContainsKey(id) ? this.songs[id].Name : null;
+        public Dictionary<int, Song> GetSongs() => this.songs;
 
         public void Draw()
         {
@@ -196,14 +198,14 @@ namespace OrchestrionPlugin
                 ImGui.Separator();
 
                 ImGui.Columns(2, "footer columns", false);
-                ImGui.SetColumnWidth(-1, ImGui.GetWindowSize().X - 100);
+                ImGui.SetColumnWidth(-1, ImGui.GetWindowSize().X - 150);
 
                 ImGui.TextWrapped(this.selectedSong > 0 ? this.songs[this.selectedSong].Locations : string.Empty);
 
                 ImGui.NextColumn();
 
                 ImGui.SameLine();
-                ImGui.SetCursorPosX(ImGui.GetWindowSize().X - 100);
+                ImGui.SetCursorPosX(ImGui.GetWindowSize().X - 150);
                 ImGui.SetCursorPosY(ImGui.GetWindowSize().Y - 30);
 
                 if (ImGui.Button("Stop"))
@@ -215,6 +217,12 @@ namespace OrchestrionPlugin
                 if (ImGui.Button("Play"))
                 {
                     Play(this.selectedSong);
+                }
+                ImGui.SameLine();
+
+                if (ImGui.Button("Shuffle"))
+                {
+                    Shuffle();
                 }
 
                 ImGui.Columns(1);
@@ -415,6 +423,11 @@ namespace OrchestrionPlugin
                 ImGui.PopTextWrapPos();
                 ImGui.EndTooltip();
             }
+        }
+
+        public void Shuffle()
+        {
+            this.controller.ShuffleSong();
         }
     }
 }

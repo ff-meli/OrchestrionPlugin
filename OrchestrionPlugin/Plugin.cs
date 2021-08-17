@@ -4,6 +4,7 @@ using Dalamud.Plugin;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -40,8 +41,7 @@ namespace OrchestrionPlugin
 
             this.localDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-            var songlistPath = Path.Combine(this.localDir, songListFile);
-            this.songList = new SongList(songlistPath, this.configuration, this, this);
+            this.songList = new SongList(this.configuration, this, this);
 
             // TODO: eventually it might be nice to do this only if the fallback player isn't being used
             // and to add/remove it on-demand if that changes
@@ -172,6 +172,8 @@ namespace OrchestrionPlugin
 
         public void PlaySong(int songId)
         {
+            this.bgmControl.shuffleEnabled = false;
+            this.bgmControl.timer.Stop();
             if (EnableFallbackPlayer)
             {
                 this.pi.CommandManager.Commands["/xlbgmset"].Handler("/xlbgmset", songId.ToString());
@@ -182,8 +184,28 @@ namespace OrchestrionPlugin
             }
         }
 
+        public void ShuffleSong()
+        {
+           var rand = new Random();
+            var randomSongList = this.songList.GetSongs().OrderBy(x => rand.Next()).Select(x => x.Key).ToList();
+            this.bgmControl.playlist = randomSongList;
+            if (EnableFallbackPlayer)
+            {
+                this.pi.CommandManager.Commands["/xlbgmset"].Handler("/xlbgmset", randomSongList.ToString());
+            }
+            else
+            {
+                this.bgmControl.shuffleEnabled = true;
+                this.bgmControl.timer.Start();
+                this.bgmControl.SetSong((ushort)this.bgmControl.playlist[0], this.configuration.TargetPriority);
+            }
+        }
+
         public void StopSong()
         {
+            this.bgmControl.shuffleEnabled = false;
+            this.bgmControl.timer.Stop();
+
             if (EnableFallbackPlayer)
             {
                 // still no real way to do this

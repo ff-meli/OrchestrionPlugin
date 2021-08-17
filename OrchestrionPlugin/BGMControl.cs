@@ -1,8 +1,10 @@
 ﻿using Dalamud.Plugin;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace OrchestrionPlugin
 {
@@ -58,6 +60,10 @@ namespace OrchestrionPlugin
         private AddressResolver Address { get; }
         private CancellationTokenSource cancellationToken;
         private BGMRecord previousSongInfo = new BGMRecord();
+        public bool shuffleEnabled;
+        public List<int> playlist { get; set; }
+
+        public System.Timers.Timer timer { get; set; }
 
         public BGMControl(AddressResolver address)
         {
@@ -72,6 +78,10 @@ namespace OrchestrionPlugin
 
         public void StartUpdate()
         {
+            timer = new System.Timers.Timer(180000);
+            timer.Elapsed += async (sender, e) => Shuffle(12);
+            timer.AutoReset = true;
+
             Task.Factory.StartNew(async () =>
             {
                 while (true)
@@ -100,11 +110,27 @@ namespace OrchestrionPlugin
                 unsafe
                 {
                     var bgms = (BGMPlayback*)this.Address.BGMControl.ToPointer();
+                    
 
                     // as far as I have seen, the control blocks are in priority order
                     // and the highest priority populated song is what the client current plays
                     for (activePriority = 0; activePriority < ControlBlockCount; activePriority++)
                     {
+                        PluginLog.Log("//////////////////");
+                        PluginLog.Log(bgms[activePriority].songId.ToString());
+                        PluginLog.Log(bgms[activePriority].songId2.ToString());
+                        PluginLog.Log(bgms[activePriority].songId3.ToString());
+                        PluginLog.Log(bgms[activePriority].priorityIndex.ToString());
+                        PluginLog.Log(bgms[activePriority].timer.ToString());
+                        PluginLog.Log(bgms[activePriority].timer.ToString());
+                        PluginLog.Log(bgms[activePriority].timerEnable.ToString());
+                        PluginLog.Log(bgms[activePriority].unk1.ToString());
+                        PluginLog.Log(bgms[activePriority].unk2.ToString());
+                        PluginLog.Log(bgms[activePriority].unk5.ToString());
+                        PluginLog.Log(bgms[activePriority].blockTimer.ToString());
+
+                        PluginLog.Log("//////////////////");
+
                         // TODO: everything here is awful and makes me sad
 
                         // This value isn't a collection of flags, but it seems like if it's 0 entirely, the song at this
@@ -136,6 +162,7 @@ namespace OrchestrionPlugin
                             return;
                         }
 
+
                         // TODO: might want to have a method to check if an id is valid, in case there are other weird cases
                         if (bgms[activePriority].songId2 != 0 && bgms[activePriority].songId2 != 9999)
                         {
@@ -146,9 +173,21 @@ namespace OrchestrionPlugin
                 }
             }
 
+            PluginLog.Log("currentsong " + currentSong.ToString());
+
+            if (MemoryUtil.GetMusicWriteAddress() == 0 && shuffleEnabled && timer.Enabled)
+            {
+
+                this.Shuffle(activePriority);
+
+                return;
+            }
+
             // separate variable because 0 is valid if nothing is playing
             if (CurrentSongId != currentSong)
             {
+
+
 #if DEBUG
                 PluginLog.Log($"changed to song {currentSong} at priority {activePriority}");
 #endif
@@ -211,6 +250,30 @@ namespace OrchestrionPlugin
             }
 
             PluginLog.Log("----- BGM dump done -----");
+        }
+
+        private void Shuffle(int activePriority)
+        {
+            timer.Stop();
+            var index = this.playlist.FindIndex(x => x == CurrentSongId);
+
+            var nextSong = (ushort)this.playlist[index + 1];
+#if DEBUG
+            PluginLog.Log($"shuffling to song {nextSong} at priority {activePriority}");
+
+            CurrentSongId = nextSong;
+#endif
+            OnSongChanged?.Invoke(nextSong);
+
+            previousSongInfo.Set(activePriority, nextSong);
+
+            this.SetSong(nextSong, 0);
+
+            while (MemoryUtil.GetMusicWriteAddress() == 0)
+            {
+                Thread.Sleep(25);
+            }
+            timer.Start();
         }
     }
 }

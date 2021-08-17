@@ -1,5 +1,6 @@
 ﻿using Dalamud.Game;
 using Dalamud.Game.Internal;
+using Dalamud.Plugin;
 using System;
 using System.Runtime.InteropServices;
 
@@ -25,6 +26,8 @@ namespace OrchestrionPlugin
             if (baseObject != IntPtr.Zero)
             {
                 this.BGMControl = Marshal.ReadIntPtr(baseObject + 0xC0);
+                PluginLog.Log(this.BGMControl.ToString());
+
             }
             else
             {

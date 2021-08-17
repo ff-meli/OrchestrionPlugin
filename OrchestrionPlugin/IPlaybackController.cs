@@ -8,6 +8,8 @@ namespace OrchestrionPlugin
         void PlaySong(int songId);
         void StopSong();
 
+        void ShuffleSong();
+
         void DumpDebugInformation();
     }
 }
