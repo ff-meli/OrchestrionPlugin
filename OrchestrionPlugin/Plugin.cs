@@ -42,7 +42,8 @@ namespace OrchestrionPlugin
 
             this.localDir = Path.GetDirectoryName(AssemblyLocation);
 
-            this.songList = new SongList(this.configuration, this, this);
+            var songlistPath = Path.Combine(this.localDir, songListFile);
+            this.songList = new SongList(songlistPath, this.configuration, this, this);
 
             // TODO: eventually it might be nice to do this only if the fallback player isn't being used
             // and to add/remove it on-demand if that changes
