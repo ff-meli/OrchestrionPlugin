@@ -37,7 +37,7 @@ namespace OrchestrionTest
                 var fontPathJp = @"NotoSansCJKjp-Medium.otf";
                 ImGui.GetIO().Fonts.AddFontFromFileTTF(fontPathJp, 17.0f, null, ImGui.GetIO().Fonts.GetGlyphRangesJapanese());
 
-                ImGui.GetIO().Fonts.Build();
+                //ImGui.GetIO().Fonts.Build();
 
                 ImGui.GetStyle().GrabRounding = 3f;
                 ImGui.GetStyle().FrameRounding = 4f;
@@ -195,19 +195,22 @@ namespace OrchestrionTest
                 ImGui.Separator();
 
                 ImGui.Columns(2, "footer columns", false);
-                ImGui.SetColumnWidth(-1, ImGui.GetWindowSize().X - 100);
+                ImGui.SetColumnWidth(-1, ImGui.GetWindowSize().X - 150);
 
                 ImGui.TextWrapped(_selected > 0 ? _songs[_selected].Locations : string.Empty);
 
                 ImGui.NextColumn();
 
                 ImGui.SameLine();
-                ImGui.SetCursorPosX(ImGui.GetWindowSize().X - 100);
+                ImGui.SetCursorPosX(ImGui.GetWindowSize().X - 150);
                 ImGui.SetCursorPosY(ImGui.GetWindowSize().Y - 30);
 
                 ImGui.Button("Stop");
                 ImGui.SameLine();
                 ImGui.Button("Play");
+                ImGui.SameLine();
+                ImGui.Button("Shuffle");
+
 
                 ImGui.Columns(1);
             }

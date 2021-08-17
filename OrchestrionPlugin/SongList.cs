@@ -158,9 +158,6 @@ namespace OrchestrionPlugin
         public string GetSongTitle(ushort id) => this.songs.ContainsKey(id) ? this.songs[id].Name : null;
         public Dictionary<int, Song> GetSongs() => this.songs;
 
-        public Dictionary<int, Song> GetSongs() => this.songs;
-
-
         public void Draw()
         {
             // temporary bugfix for a race condition where it was possible that
@@ -473,11 +470,6 @@ namespace OrchestrionPlugin
                 ImGui.PopTextWrapPos();
                 ImGui.EndTooltip();
             }
-        }
-
-        public void Shuffle()
-        {
-            this.controller.ShuffleSong();
         }
     }
 }
