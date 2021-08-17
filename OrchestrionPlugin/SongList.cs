@@ -7,6 +7,7 @@ using System.Net;
 using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
+using Dalamud.Plugin;
 
 namespace OrchestrionPlugin
 {
@@ -15,16 +16,19 @@ namespace OrchestrionPlugin
         public int Id;
         public string Name;
         public string Locations;
+        public string AdditionalInfo;
     }
 
     class SongList : IDisposable
     {
+        private const string SheetPath = @"https://docs.google.com/spreadsheets/d/1gGNCu85sjd-4CDgqw-K5tefTe4HYuDK38LkRyvx_fEc/gviz/tq?tqx=out:csv&sheet=main";
         private Dictionary<int, Song> songs = new Dictionary<int, Song>();
         private Configuration configuration;
         private IPlaybackController controller;
         private IResourceLoader loader;
         private int selectedSong;
         private string searchText = string.Empty;
+        private string songListFile = string.Empty;
         private ImGuiScene.TextureWrap favoriteIcon = null;
         private ImGuiScene.TextureWrap settingsIcon = null;
         private bool showDebugOptions = false;
@@ -47,11 +51,12 @@ namespace OrchestrionPlugin
 
         public SongList(Configuration configuration, IPlaybackController controller, IResourceLoader loader)
         {
+            this.songListFile = songListFile;
             this.configuration = configuration;
             this.controller = controller;
             this.loader = loader;
 
-            ParseSongs();
+            UpdateSheet();
         }
 
         public void Dispose()
@@ -61,38 +66,63 @@ namespace OrchestrionPlugin
             this.favoriteIcon?.Dispose();
             this.settingsIcon?.Dispose();
         }
-
-        private void ParseSongs()
+        
+       // Attempts to load supplemental bgm data from the csv file
+        // This throws all internal errors
+        private void LoadSheet(string sheetText)
         {
-            var request = (HttpWebRequest)WebRequest.Create(configuration.XivBgmCsv);
-            var response = (HttpWebResponse)request.GetResponse();
+            songs = new Dictionary<int, Song>();
 
-            using (var stream = new StreamReader(response.GetResponseStream()))
+            var sheetLines = sheetText.Split('\n'); // gdocs provides \n
+            for (int i = 1; i < sheetLines.Length; i++)
             {
-                while (!stream.EndOfStream)
+                // The formatting is odd here because gdocs adds quotes around columns and doubles each single quote
+                var elements = sheetLines[i].Split(new[] {"\","}, StringSplitOptions.None);
+                var id = int.Parse(elements[0].Substring(1));
+                var name = elements[1].Substring(1).Replace("\"\"", "\"");;
+
+                // Any track without an official name is "???"
+                // While Null BGM tracks and None are also pretty invalid
+                if (string.IsNullOrEmpty(name) || name == "Null BGM" || name == "None") continue;
+                    
+                var location = elements[2].Substring(1).Replace("\"\"", "\"");
+                var additionalInfo = elements[3].Substring(1, elements[3].Substring(1).Length - 1).Replace("\"\"", "\"");
+                    
+                var song = new Song
                 {
-                    var parts = stream.ReadLine().Split(',').ToList();
-                    var escapedParts = parts.Select(x => Regex.Replace(x, "\"", string.Empty)).ToArray();
-                    if (!int.TryParse(escapedParts[0], out int id))
-                    {
-                        continue;
-                    }
+                    Id = id,
+                    Name = name,
+                    Locations = location,
+                    AdditionalInfo = additionalInfo
+                };
+                    
+                songs[id] = song;
+            }
+        }
 
-                    var name = escapedParts[1];
-                    if (id == 0 || string.IsNullOrEmpty(name) || name == "N/A")
-                    {
-                        continue;
-                    }
+        private void UpdateSheet()
+        {
+            var existingText = File.ReadAllText(this.songListFile);
 
-                    var song = new Song
-                    {
-                        Id = id,
-                        Name = name.Trim(),
-                        Locations = string.Join(", ", escapedParts.Skip(2).Where(s => !string.IsNullOrEmpty(s)).ToArray()).Trim()
-                    };
+            using var client = new WebClient();
+            try
+            {
+                PluginLog.Log("Checking for updated bgm sheet");
+                var newText = client.DownloadString(SheetPath);
+                LoadSheet(newText);
 
-                    this.songs.Add(id, song);
+                // would really prefer some kind of proper versioning here
+                if (newText != existingText)
+                {
+                    File.WriteAllText(this.songListFile, newText);
+                    PluginLog.Log("Updated bgm sheet to new version");
                 }
+            }
+            catch (Exception e)
+            {
+                PluginLog.Error(e, "Orchestrion failed to update bgm sheet; using previous version");
+                // if this throws, something went horribly wrong and we should just break completely
+                LoadSheet(existingText);
             }
         }
 
@@ -178,7 +208,7 @@ namespace OrchestrionPlugin
 
                 ImGui.Separator();
 
-                ImGui.BeginChild("##songlist", new Vector2(0, -35));
+                ImGui.BeginChild("##songlist", new Vector2(0, -60));
                 if (ImGui.BeginTabBar("##songlist tabs"))
                 {
                     if (ImGui.BeginTabItem("All songs"))
@@ -201,6 +231,10 @@ namespace OrchestrionPlugin
                 ImGui.SetColumnWidth(-1, ImGui.GetWindowSize().X - 150);
 
                 ImGui.TextWrapped(this.selectedSong > 0 ? this.songs[this.selectedSong].Locations : string.Empty);
+                
+                // ImGui.Separator();
+                
+                ImGui.TextWrapped(this.selectedSong > 0 ? this.songs[this.selectedSong].AdditionalInfo : string.Empty);
 
                 ImGui.NextColumn();
 
@@ -249,6 +283,7 @@ namespace OrchestrionPlugin
                 var song = s.Value;
                 if (searchText.Length > 0 && !song.Name.ToLower().Contains(searchText.ToLower())
                     && !song.Locations.ToLower().Contains(searchText.ToLower())
+                    && !song.AdditionalInfo.ToLower().Contains(searchText.ToLower())
                     && !song.Id.ToString().Contains(searchText))
                 {
                     continue;
