@@ -134,6 +134,11 @@ namespace OrchestrionPlugin
             this.controller.StopSong();
         }
 
+        public void Shuffle()
+        {
+            this.controller.ShuffleSong();
+        }
+
         private bool IsFavorite(int songId) => this.configuration.FavoriteSongs.Contains(songId);
 
         private void AddFavorite(int songId)
@@ -149,6 +154,9 @@ namespace OrchestrionPlugin
         }
 
         public string GetSongTitle(ushort id) => this.songs.ContainsKey(id) ? this.songs[id].Name : null;
+
+        public Dictionary<int, Song> GetSongs() => this.songs;
+
 
         public void Draw()
         {
@@ -225,7 +233,7 @@ namespace OrchestrionPlugin
                 ImGui.Separator();
 
                 ImGui.Columns(2, "footer columns", false);
-                ImGui.SetColumnWidth(-1, ImGui.GetWindowSize().X - 100);
+                ImGui.SetColumnWidth(-1, ImGui.GetWindowSize().X - 150);
 
                 ImGui.TextWrapped(this.selectedSong > 0 ? this.songs[this.selectedSong].Locations : string.Empty);
                 
@@ -236,7 +244,7 @@ namespace OrchestrionPlugin
                 ImGui.NextColumn();
 
                 ImGui.SameLine();
-                ImGui.SetCursorPosX(ImGui.GetWindowSize().X - 100);
+                ImGui.SetCursorPosX(ImGui.GetWindowSize().X - 150);
                 ImGui.SetCursorPosY(ImGui.GetWindowSize().Y - 30);
 
                 if (ImGui.Button("Stop"))
@@ -248,6 +256,13 @@ namespace OrchestrionPlugin
                 if (ImGui.Button("Play"))
                 {
                     Play(this.selectedSong);
+                }
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Shuffle"))
+                {
+                    Shuffle();
                 }
 
                 ImGui.Columns(1);

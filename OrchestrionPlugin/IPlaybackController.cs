@@ -7,7 +7,7 @@ namespace OrchestrionPlugin
         bool EnableFallbackPlayer { get; set; }
         void PlaySong(int songId);
         void StopSong();
-
+        void ShuffleSong();
         void DumpDebugInformation();
     }
 }
