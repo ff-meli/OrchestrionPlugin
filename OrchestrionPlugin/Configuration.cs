@@ -15,9 +15,9 @@ namespace OrchestrionPlugin
 
         public bool UseOldPlayback { get; set; } = false;
         public int TargetPriority { get; set; } = 0;
-
+        
         public HashSet<int> FavoriteSongs { get; internal set; } = new HashSet<int>();
-
+        
         [NonSerialized]
         private DalamudPluginInterface pluginInterface;
 

@@ -2,9 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Numerics;
 using System.Text;
+using System.Text.RegularExpressions;
 using Dalamud.Plugin;
 
 namespace OrchestrionPlugin
@@ -65,7 +67,7 @@ namespace OrchestrionPlugin
             this.settingsIcon?.Dispose();
         }
         
-        // Attempts to load supplemental bgm data from the csv file
+       // Attempts to load supplemental bgm data from the csv file
         // This throws all internal errors
         private void LoadSheet(string sheetText)
         {
@@ -154,6 +156,7 @@ namespace OrchestrionPlugin
         }
 
         public string GetSongTitle(ushort id) => this.songs.ContainsKey(id) ? this.songs[id].Name : null;
+        public Dictionary<int, Song> GetSongs() => this.songs;
 
         public Dictionary<int, Song> GetSongs() => this.songs;
 
@@ -256,6 +259,12 @@ namespace OrchestrionPlugin
                 if (ImGui.Button("Play"))
                 {
                     Play(this.selectedSong);
+                }
+                ImGui.SameLine();
+
+                if (ImGui.Button("Shuffle"))
+                {
+                    Shuffle();
                 }
 
                 ImGui.SameLine();
@@ -464,6 +473,11 @@ namespace OrchestrionPlugin
                 ImGui.PopTextWrapPos();
                 ImGui.EndTooltip();
             }
+        }
+
+        public void Shuffle()
+        {
+            this.controller.ShuffleSong();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Dalamud.Game;
 using Dalamud.Game.Internal;
+using Dalamud.Plugin;
 using System;
 using System.Runtime.InteropServices;
 
