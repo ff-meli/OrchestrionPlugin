@@ -253,15 +253,10 @@ namespace OrchestrionPlugin
                 }
 
                 ImGui.SameLine();
+
                 if (ImGui.Button("Play"))
                 {
                     Play(this.selectedSong);
-                }
-                ImGui.SameLine();
-
-                if (ImGui.Button("Shuffle"))
-                {
-                    Shuffle();
                 }
 
                 ImGui.SameLine();
